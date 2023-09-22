@@ -3,14 +3,16 @@ package org.example.beans;
 
 import org.example.entity.Applicant;
 import org.example.repository.ApplicantRepository;
+import org.example.service.ApplicantService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.repository.query.Param;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 public class ApplicantController {
@@ -19,34 +21,32 @@ public class ApplicantController {
     ApplicantRepository applicantRepository;
 
     @Autowired
+    ApplicantService applicantService;
+
+    @Autowired
     Duck duck;
 
     @GetMapping("applicants")
-    public Applicant getApplicant() {
+    public List<Applicant> getApplicants() {
+        return applicantRepository.findAll();
+    }
 
-        Applicant applicant = new Applicant();
-
-        applicant.setName("A");
-        applicant.setAddress("Home");
-
-        applicantRepository.save(applicant);
-
-
-        return applicant;
+    @PostMapping("applicants")
+    public Applicant saveApplicant(Applicant applicant) {
+        return applicantService.saveApplicant(applicant);
     }
 
     @GetMapping("applicants/{id}")
     public Applicant getSpecificApplicant(@PathVariable String id) {
+        System.out.println(applicantRepository);
+        Optional<Applicant> optionalApplicant= applicantRepository.findById(Integer.parseInt(id));
 
-        Applicant applicant = new Applicant();
+        if(!optionalApplicant.isEmpty()) {
+            return optionalApplicant.get();
+        }else {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        }
 
-        applicant.setName("A");
-        applicant.setAddress("Home");
-
-        applicantRepository.save(applicant);
-
-
-        return applicant;
     }
 
     @GetMapping("applicants-findbyname")
